@@ -31,10 +31,6 @@
     font-size: small;
 }
 
-.seaContainer {;
-    min-width: 320px;
-}
-
 .seaContainer > .sea {
     min-width: 320px;
     height: 320px;
