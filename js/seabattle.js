@@ -1,5 +1,7 @@
 'use strict';
 
+//TODO: Сделать выстрелы компьтера умнее
+
 //Новая версия j-Query не поддерживает addClass :(
 function SeaBattle(targetContainer, edge) {
     //Список css-классов
@@ -472,33 +474,27 @@ function SeaBattle(targetContainer, edge) {
                     coordinates.push([coordinate_x, coordinate_y]);
                     continue;
                 }
+                //TODO: При расставлении промахов вокруг мертвого корабля в редких случаях теряется одна ячейка
                 if (x == 0 || y == 0) {
                     if (map[coordinate_x] && map[coordinate_x][coordinate_y]) {
                         if (map[coordinate_x][coordinate_y] == cellType.ship || map[coordinate_x][coordinate_y] == cellType.dead) {
+                            var coordinate;
                             if (y == 0) {
-                                for (var ix = coordinate_x; ix <= (coordinate_x + 4*x); ix = x > 0 ? ix - 1 : ix + 1) {
-                                    if (ix > 0 && ix <= 10) {
-                                        if (map[ix][coordinate_y] == cellType.ship || map[ix][coordinate_y] == cellType.dead) {
-                                            coordinates.push([ix, coordinate_y]);
-                                        }
-                                        else
-                                        {
-                                            break;
-                                        }
-                                    }
-                                }
+                                coordinate= coordinate_x;
+                               while (coordinate > 0 && coordinate <= 10
+                                   && (map[coordinate][coordinate_y] == cellType.ship || map[coordinate][coordinate_y] == cellType.dead) )
+                               {
+                                   coordinates.push([coordinate, coordinate_y]);
+                                   if (x > 0) coordinate++; else coordinate--;
+                               }
                             }
                             else {
-                                for (var iy = coordinate_y; iy <= (coordinate_y + 4*x); iy = x > 0 ? iy - 1 : iy + 1) {
-                                    if (iy > 0 && iy <= 10) {
-                                        if (map[coordinate_x][iy] == cellType.ship || map[coordinate_x][iy] == cellType.dead) {
-                                            coordinates.push([coordinate_x, iy]);
-                                        }
-                                        else
-                                        {
-                                            break;
-                                        }
-                                    }
+                                coordinate = coordinate_y;
+                                while (coordinate > 0 && coordinate <= 10
+                                && (map[coordinate_x][coordinate] == cellType.ship || map[coordinate_x][coordinate] == cellType.dead) )
+                                {
+                                    coordinates.push([coordinate_x, coordinate]);
+                                    if (x > 0) coordinate++; else coordinate--;
                                 }
                             }
                         }
@@ -569,12 +565,12 @@ function SeaBattle(targetContainer, edge) {
 
     //Выстрел компьтера
     var computerShot = function () {
-        var targets = $('td:not(.' + cssClasses.miss + ')[data-owner="' + players.Player + '"]');
+        var targets = $('table#'+elementsIds.playerSea+' td:not(.' + cssClasses.miss + ', .'+cssClasses.dead+')[data-owner="' + players.Player + '"]');
         var targetIndex = getRandomIntBetween(0, targets.length - 1);
         var target = $(targets[targetIndex]);
         var x, y;
-        x = target.attr('data-x');
-        y = target.attr('data-y');
+        x = parseInt(target.attr('data-x'));
+        y = parseInt(target.attr('data-y'));
         hitShip(players.Player, x, y);
         drawShot(players.Player, x, y);
     };
@@ -590,7 +586,7 @@ function SeaBattle(targetContainer, edge) {
                     drawShot(target, x, y);
 
                     //Ответный выстрел компьтера
-                    setTimeout(computerShot(), 500)
+                    setTimeout(computerShot(), 5000)
                 }
                 else {
                     createMessage('Капитан, мы уже сюда стреляли! Предлагаю изменить координаты.');
